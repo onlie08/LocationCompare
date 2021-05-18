@@ -15,6 +15,8 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.location.CoordinateConverter;
+import com.amap.api.location.DPoint;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
@@ -259,9 +261,20 @@ public class LocationService extends Service implements SfMapLocationListener, A
     private void wgs84ToGcj02(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-//        double[] transformed = CoordinateTransformUtil.wgs84togcj02(longitude, latitude);
-//        location.setLatitude(transformed[1]);
-//        location.setLongitude(transformed[0]);
+
+        DPoint dPoint = new DPoint();
+        dPoint.setLatitude(latitude);
+        dPoint.setLongitude(longitude);
+        try {
+            CoordinateConverter converter  = new CoordinateConverter(getApplicationContext());
+            converter.from(CoordinateConverter.CoordType.GPS);
+            converter.coord(dPoint);
+            DPoint desLatLng = converter.convert();
+            location.setLatitude(desLatLng.getLatitude());
+            location.setLongitude(desLatLng.getLongitude());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveResult() {
